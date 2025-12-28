@@ -64,6 +64,8 @@ mycpu(void) {
 }
 
 // Return the current struct proc *, or zero if none.
+// mycpu 从每个cpu上拿到proc.
+// 每个cpu有tp(thread pointer)寄存器保存cpu的id.
 struct proc*
 myproc(void) {
   push_off();

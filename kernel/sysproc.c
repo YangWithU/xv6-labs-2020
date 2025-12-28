@@ -52,13 +52,15 @@ sys_sbrk(void)
   return addr;
 }
 
+//LINK - 系统sleep调用的实现
 uint64
 sys_sleep(void)
 {
   int n;
   uint ticks0;
 
-  if(argint(0, &n) < 0)
+  // mycpu拿到struct cpu; 从cpu上拿到proc; 从p->trapframe拿到寄存器值
+  if(argint(0, &n) < 0) // 按照int大小拿第0个寄存器值;为什么拿a0, 因为c编译器将参数依次写入a0...
     return -1;
   acquire(&tickslock);
   ticks0 = ticks;
