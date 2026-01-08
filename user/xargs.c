@@ -81,7 +81,7 @@ int main(int argc, char *argv[]) {
   while (getline(buf)) {
     char *tot_args[MAXARG] = {0};
 
-    memcpy(tot_args, argv + 1, sizeof(char *) * (argc - 1)); // save argv
+    memmove(tot_args, argv + 1, sizeof(char *) * (argc - 1)); // save argv
     // int ret = parse_stdin(buf, tot_args + argc - 1, MAXARG - argc + 1);
     // printarg(ret + argc - 1, tot_args);
 
