@@ -1,5 +1,7 @@
 #pragma once
 
+#include "kernel/riscv.h"
+
 struct buf;
 struct context;
 struct file;

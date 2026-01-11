@@ -36,6 +36,9 @@ jyy 也有一些辅助资料
 10. https://blog.miigon.net/posts/s081-lab1-unix-utilities/
 参考答案
 
+11. https://blog.wingszeng.top/mit-6-s081-lab-2/
+参考答案
+
 用 gdb-multiarch 调试
 
 # 计划和进度

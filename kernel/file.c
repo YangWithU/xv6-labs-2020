@@ -103,6 +103,7 @@ filestat(struct file *f, uint64 addr)
 
 // Read from file f.
 // addr is a user virtual address.
+//LINK - 系统调用sys_read的内核具体实现,负责将不同类型读取分发给具体的处理函数
 int
 fileread(struct file *f, uint64 addr, int n)
 {

@@ -12,6 +12,7 @@
 #define BACK  5
 
 #define MAXARGS 10
+#define BUF_SIZE 1024
 
 struct cmd {
   int type;
@@ -75,7 +76,7 @@ runcmd(struct cmd *cmd)
     ecmd = (struct execcmd*)cmd;
     if(ecmd->argv[0] == 0)
       exit(1);
-    exec(ecmd->argv[0], ecmd->argv);
+    exec(ecmd->argv[0], ecmd->argv); // 直接子进程自己原地开跑
     fprintf(2, "exec %s failed\n", ecmd->argv[0]);
     break;
 
@@ -130,10 +131,11 @@ runcmd(struct cmd *cmd)
   exit(0);
 }
 
+//LINK - shell获取用户输入;调sys_read之后一直睡眠直到用户输入回车,内核一个个将字符传回用户态
 int
 getcmd(char *buf, int nbuf)
 {
-  fprintf(2, "$ ");
+  fprintf(1, "> ");
   memset(buf, 0, nbuf);
   gets(buf, nbuf);
   if(buf[0] == 0) // EOF
@@ -144,7 +146,7 @@ getcmd(char *buf, int nbuf)
 int
 main(void)
 {
-  static char buf[100];
+  static char buf[BUF_SIZE] = {0};
   int fd;
 
   // Ensure that three file descriptors are open.
@@ -191,7 +193,7 @@ fork1(void)
 
 //PAGEBREAK!
 // Constructors
-
+// make一个新的cmd对象
 struct cmd*
 execcmd(void)
 {
@@ -309,11 +311,11 @@ gettoken(char **ps, char *es, char **q, char **eq)
 
 int
 peek(char **ps, char *es, char *toks)
-{
+{ // 去除whitespace的内容，并返回toks是否存在于ps
   char *s;
 
   s = *ps;
-  while(s < es && strchr(whitespace, *s))
+  while(s < es && strchr(whitespace, *s)) // 跳过whitespace的内容
     s++;
   *ps = s;
   return *s && strchr(toks, *s);
@@ -415,7 +417,7 @@ parseblock(char **ps, char *es)
 struct cmd*
 parseexec(char **ps, char *es)
 {
-  char *q, *eq;
+  char *q, *eq; // q是解析出的命令token, eq是结束点, 都指向ps内存
   int tok, argc;
   struct execcmd *cmd;
   struct cmd *ret;

@@ -67,7 +67,7 @@ LD = $(TOOLPREFIX)ld
 OBJCOPY = $(TOOLPREFIX)objcopy
 OBJDUMP = $(TOOLPREFIX)objdump
 
-CFLAGS = -Wall -O -fno-omit-frame-pointer -ggdb -O0
+CFLAGS = -Wall -O -fno-omit-frame-pointer -O0 -g -ggdb
 # CFLAGS += -Werror
 
 ifdef LAB
@@ -158,6 +158,7 @@ UPROGS=\
 	$U/_primes\
 	$U/_find\
 	$U/_xargs\
+	$U/_test_padding\
 
 ifeq ($(LAB),syscall)
 UPROGS += \
