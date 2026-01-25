@@ -1,6 +1,6 @@
-#include "kernel/types.h"
 #include "kernel/fs.h"
 #include "kernel/stat.h"
+#include "kernel/types.h"
 #include "user/user.h"
 
 #define BUF_SIZE 512

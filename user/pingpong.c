@@ -82,7 +82,7 @@ int main() {
   if (pid == 0) { // child
     close(p2c[1]);
     close(c2p[0]);
-    
+
     int readfd = dup(p2c[0]);
     int writefd = dup(c2p[1]);
 
@@ -98,10 +98,10 @@ int main() {
   } else {
     close(c2p[1]);
     close(p2c[0]);
-    
+
     int readfd = dup(c2p[0]);
     int writefd = dup(p2c[1]);
-    
+
     write(writefd, msg, 1);
 
     read(readfd, rbuf, 1);

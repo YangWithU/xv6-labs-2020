@@ -1,5 +1,5 @@
-#include "kernel/types.h"
 #include "kernel/stat.h"
+#include "kernel/types.h"
 #include "user/user.h"
 
 #include <stddef.h>
@@ -41,15 +41,16 @@ int main() {
   printf("  offsetof(e) = %d\n", offsetof(struct cons_original, e));
   printf("  offsetof(history) = %d\n", offsetof(struct cons_original, history));
   printf("  total size = %d\n\n", sizeof(struct cons_original));
-  
+
   printf("优化布局:\n");
   printf("  sizeof(spinlock) = %d\n", sizeof(struct spinlock));
   printf("  offsetof(r) = %d\n", offsetof(struct cons_optimized, r));
   printf("  offsetof(w) = %d\n", offsetof(struct cons_optimized, w));
   printf("  offsetof(e) = %d\n", offsetof(struct cons_optimized, e));
   printf("  offsetof(buf) = %d\n", offsetof(struct cons_optimized, buf));
-  printf("  offsetof(history) = %d\n", offsetof(struct cons_optimized, history));
+  printf("  offsetof(history) = %d\n",
+         offsetof(struct cons_optimized, history));
   printf("  total size = %d\n", sizeof(struct cons_optimized));
-  
+
   exit(0);
 }
