@@ -42,6 +42,13 @@ void consputc(int c) {
   }
 }
 
+enum up_key_pattern {
+  KEY_NOT_MATCH = 0,
+  KEY_ESC = 1,
+  KEY_LBRACKET = 2,
+  KEY_A = 3
+};
+
 struct {
 #define INPUT_BUF 128
 
@@ -56,6 +63,7 @@ struct {
   uint hist_msg_id; // 当前历史记录到哪一行
   uint view_idx;    // 当前正在查看哪一行
   char history[MAX_HISTORY][INPUT_BUF];
+  enum up_key_pattern curr_key;
 } cons;
 
 //
@@ -144,11 +152,50 @@ void save_to_cons_history(uint len) {
   cons.history[cons.hist_msg_id % MAX_HISTORY][pos] = '\0';
 
   // 如果命令为空，则不保存
-  if (pos == 0)
+  if (pos == 0) {
     return;
+  }
+
+  uint last_slot = (cons.hist_msg_id - 1 + MAX_HISTORY) % MAX_HISTORY;
+  if (cons.hist_msg_id > 0 &&
+      strncmp(cons.history[cons.hist_msg_id], cons.history[last_slot],
+              INPUT_BUF) == 0) {
+    return; // 命令和之前一行重复
+  }
 
   cons.hist_msg_id++;
   cons.view_idx = cons.hist_msg_id;
+}
+
+// 清除当前缓冲区行的内容，并替换屏幕上的内容为last history
+void clear_line_print_history() {
+  if (cons.curr_key != KEY_A) {
+    return;
+  }
+
+  if (cons.view_idx > 0) {
+    cons.view_idx--;
+  } else {
+    // 已经是第一条了，无法再回退，直接返回,会在caller释放锁
+    return;
+  }
+
+  // 1. 擦除
+  while (cons.e != cons.w && cons.buf[(cons.e - 1) % INPUT_BUF] != '\n') {
+    cons.e--;
+    consputc(BACKSPACE);
+  }
+
+  // 2. 打印并写入buf
+  // 使用临时变量 len 获取长度，避免多次访问复杂数组结构
+  int len = strlen(cons.history[cons.view_idx % MAX_HISTORY]);
+  for (uint i = 0; i < len; i++) {
+    char cc = cons.history[cons.view_idx % MAX_HISTORY][i];
+    consputc(cc);
+    cons.buf[cons.e++ % INPUT_BUF] = cc;
+  }
+
+  return;
 }
 
 //
@@ -160,33 +207,25 @@ void save_to_cons_history(uint len) {
 void consoleintr(int c) {
   acquire(&cons.lock);
 
-  if (c == 2) { // 替换屏幕上的内容为last history
-    // printf("got ctrl+b\n");
-    if (cons.view_idx > 0) {
-      cons.view_idx--;
-    } else {
-      // 已经是第一条了，无法再回退，直接释放锁并返回
-      release(&cons.lock);
-      return;
-    }
+  // 方向上键：Esc [ A
+  // 对应ascii: 27, 91, 65
+  if (c == 27) {
+    cons.curr_key = KEY_ESC;
+    release(&cons.lock);
+    return; // 吃掉 ESC，等待下一个
+  } else if (c == 91 && cons.curr_key == KEY_ESC) {
+    cons.curr_key = KEY_LBRACKET;
+    release(&cons.lock);
+    return; // 吃掉 [，等待下一个; 之前没有KEY_ESC我不吃
+  } else if (c == 65 && cons.curr_key == KEY_LBRACKET) {
+    cons.curr_key = KEY_A;
+    clear_line_print_history(); // bingo, now clear and print
 
-    // 1. 擦除
-    while (cons.e != cons.w && cons.buf[(cons.e - 1) % INPUT_BUF] != '\n') {
-      cons.e--;
-      consputc(BACKSPACE);
-    }
-
-    // 2. 打印并写入buf
-    // 使用临时变量 len 获取长度，避免多次访问复杂数组结构
-    int len = strlen(cons.history[cons.view_idx % MAX_HISTORY]);
-    for (uint i = 0; i < len; i++) {
-      char cc = cons.history[cons.view_idx % MAX_HISTORY][i];
-      consputc(cc);
-      cons.buf[cons.e++ % INPUT_BUF] = cc;
-    }
-
+    cons.curr_key = KEY_NOT_MATCH; // reset
     release(&cons.lock);
     return;
+  } else {
+    cons.curr_key = KEY_NOT_MATCH; // 中断正在进行的匹配
   }
 
   switch (c) {

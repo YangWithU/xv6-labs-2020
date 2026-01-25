@@ -203,4 +203,34 @@ c. 填空：链接器把 usys.o 里 sleep 函数的真实地址，填回到 slee
 
 5. usertrapret() 返回用户态
 
+一般原理：
+
+系统调用一般封装成一个库(glibc)并且重要系统调用被按照全局符号的形式定义在库中。
+库会提供：
+一个系统调用表，上面有一堆系统调用的数字编号，以及最简单的系统调用实现(user区转换到kernel函数实现的asm符号)
+
+```asm
+0000000000000620 <sleep>:
+.global sleep
+sleep:
+ li a7, SYS_sleep
+ 620:	48b5                	li	a7,13
+ ecall
+ 622:	00000073          	ecall
+ ret
+ 626:	8082                	ret
+```
+
+程序和这个库进行链接就可以得到用户态的系统调用的符号
+用 ecall 即可转到内核库中的函数实现
+
+---
+
+# xv6页表用硬件实现
+
+页表：
+virtual addr(riscv指令操作的地址) -> physical addr(cpu发送主存的地址)
+
+一个进程一个页表
+
 

@@ -160,6 +160,8 @@ void clockintr() {
 int devintr() {
   uint64 scause = r_scause();
 
+  // 判断是系统调用、异常，还是某个硬件发出了信号
+  // scause & 0x8000000000000000L 最高位1则中断
   if ((scause & 0x8000000000000000L) && (scause & 0xff) == 9) {
     // this is a supervisor external interrupt, via PLIC.
 

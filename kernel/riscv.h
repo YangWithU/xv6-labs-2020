@@ -166,6 +166,13 @@ static inline void w_mscratch(uint64 x) {
 // Supervisor Trap Cause
 static inline uint64 r_scause() {
   uint64 x;
+  // csrr, Control and Status Register Read（去读控制与状态寄存器scause）
+  // GCC 的内联汇编格式:
+  // asm volatile("指令模板" : 输出操作数 : 输入操作数 : 破坏列表);
+  // =r"(x):
+  // = 表示这是一个输出操作数（写入到变量 x）。[6]
+  // r 表示让编译器选择一个通用的寄存器（Register）来存放中间结果。[5]
+  // x 是 C 语言中定义的变量，最终汇编指令读取的值会存入 x。
   asm volatile("csrr %0, scause" : "=r"(x));
   return x;
 }
