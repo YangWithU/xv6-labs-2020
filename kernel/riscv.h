@@ -352,3 +352,24 @@ sfence_vma()
 
 typedef uint64 pte_t;
 typedef uint64 *pagetable_t; // 512 PTEs
+
+// PMP (Physical Memory Protection)
+#define PMP_R (1L << 0)
+#define PMP_W (1L << 1)
+#define PMP_X (1L << 2)
+#define PMP_A_TOR (1L << 3)
+#define PMP_A_NA4 (2L << 3)
+#define PMP_A_NAPOT (3L << 3)
+#define PMP_L (1L << 7)
+
+static inline void
+w_pmpcfg0(uint64 x)
+{
+  asm volatile("csrw pmpcfg0, %0" : : "r" (x));
+}
+
+static inline void
+w_pmpaddr0(uint64 x)
+{
+  asm volatile("csrw pmpaddr0, %0" : : "r" (x));
+}

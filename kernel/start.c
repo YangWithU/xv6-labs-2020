@@ -45,6 +45,10 @@ start()
   int id = r_mhartid();
   w_tp(id);
 
+  // configure PMP to let supervisor mode access all of physical memory.
+  w_pmpaddr0(0x3fffffffffffffull);
+  w_pmpcfg0(PMP_R | PMP_W | PMP_X | PMP_A_NAPOT);
+
   // switch to supervisor mode and jump to main().
   asm volatile("mret");
 }
